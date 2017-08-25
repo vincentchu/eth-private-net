@@ -2,11 +2,15 @@
 
 IDENTITIES=(alice bob lily)
 FLAGS='--networkid=8888'
-DEV_FLAGS='--ipcdisable --nodiscover --verbosity=4'
+DEV_FLAGS='--nodiscover --verbosity=4'
 
 BASE_PORT=40300
 BASE_RPC_PORT=8100
 CMD=$1
+
+function exec_on_node() {
+  geth --exec="$2" attach ./$1/geth.ipc
+}
 
 case $CMD in
   init)
@@ -50,4 +54,15 @@ case $CMD in
 
     echo "Starting node for $IDENTITY on port: $PORT, RPC port: $RPC_PORT. Console logs sent to ./$IDENTITY/console.log"
     geth --datadir=./$IDENTITY --port=$PORT --rpcport=$RPC_PORT $FLAGS $DEV_FLAGS console 2>> ./$IDENTITY/console.log
+    ;;
+
+  connect)
+    IDENTITY1=$2
+    IDENTITY2=$3
+
+    ENODE=$(exec_on_node $IDENTITY1 'admin.nodeInfo.enode')
+    CONNECT_JS="admin.addPeer($ENODE)"
+
+    exec_on_node $IDENTITY2 $CONNECT_JS
+    ;;
 esac

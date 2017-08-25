@@ -14,7 +14,7 @@ Each user's identity is stored in `./[NAME]/keystore/UTC-...`.
 Creating new identities is easy. Simply run:
 
 ```
-geth --datadir=./[your dir] account new
+→ geth --datadir=./[your dir] account new
 ```
 
 You'll be prompted for a password. Afterwards, your account information, including the identity's account address will be stored under: `./[NAME]/keystore/UTC-...`.
@@ -32,7 +32,7 @@ geth --datadir=./alice --networkid=8888 init genesis.json
 Nodes for the `alice`, `bob`, and `lily` identities can be started easily with the `start` action of the convenience script:
 
 ```
-vince@local:eth-private-net (master *) → ./eth-private-net start alice
+→ ./eth-private-net start alice
 Starting node for alice on port: 40301, RPC port: 8101. Console logs sent to ./alice/console.log
 Welcome to the Geth JavaScript console!
 ```
@@ -51,7 +51,7 @@ You can also determine the running node's `enode` identifier:
 "enode://f15b1...@[::]:40301?discport=0"
 ```
 
-Take this identifier and use it to connect from another running client:
+Take this identifier and use it to manually connect from another running client:
 
 ```
 > admin.peers
@@ -76,6 +76,13 @@ admin.addPeer("enode://f15b1...@[::]:40301?discport=0")
       }
     }
 }]
+```
+
+There is also a convenience method that allows you to connect two nodes together:
+
+```
+→ ./eth-private-net connect alice bob
+true
 ```
 
 ## Mining
@@ -105,6 +112,6 @@ DEBUG[08-25|16:20:45] Loaded old ethash dataset from disk      epoch=0
 DEBUG[08-25|16:20:45] Loaded old ethash dataset from disk      epoch=1
 INFO [08-25|16:20:53] Successfully sealed new block            number=6 hash=3ed256…3ef7c2
 DEBUG[08-25|16:20:53] Trie cache stats after commit            misses=15 unloads=0
-INFO [08-25|16:20:53] 🔨 mined potential block                  number=6 hash=3ed256…3ef7c2
+INFO [08-25|16:20:53] 🔨 mined potential block                 number=6 hash=3ed256…3ef7c2
 INFO [08-25|16:20:53] Commit new mining work                   number=7 txs=0 uncles=0 elapsed=444.679µs
 ```
