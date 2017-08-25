@@ -2,6 +2,10 @@
 
 IDENTITIES=(alice bob lily)
 FLAGS='--networkid=8888'
+DEV_FLAGS='--ipcdisable --nodiscover --verbosity=4'
+
+BASE_PORT=40300
+BASE_RPC_PORT=8100
 CMD=$1
 
 case $CMD in
@@ -18,4 +22,32 @@ case $CMD in
       rm -r ./$IDENTITY/geth
     done
     ;;
+
+  start)
+    IDENTITY=$2
+    if [ -z $IDENTITY ]
+    then
+      echo "No identity specified. Identity must be one of: ${IDENTITIES[*]}"
+      exit -1
+    fi
+
+    case $IDENTITY in
+      alice)
+        OFFSET=1
+        ;;
+
+      bob)
+        OFFSET=2
+        ;;
+
+      bob)
+        OFFSET=3
+        ;;
+    esac
+
+    PORT=$((BASE_PORT + OFFSET))
+    RPC_PORT=$((BASE_RPC_PORT + OFFSET))
+
+    echo "Starting node for $IDENTITY on port: $PORT, RPC port: $RPC_PORT. Console logs sent to ./$IDENTITY/console.log"
+    geth --datadir=./$IDENTITY --port=$PORT --rpcport=$RPC_PORT $FLAGS $DEV_FLAGS console 2>> ./$IDENTITY/console.log
 esac
