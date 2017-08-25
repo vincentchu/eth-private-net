@@ -1,0 +1,21 @@
+#!/bin/bash
+
+IDENTITIES=(alice bob lily)
+FLAGS='--networkid=8888'
+CMD=$1
+
+case $CMD in
+  init)
+    for IDENTITY in ${IDENTITIES[@]}; do
+      echo "Initializing genesis block for $IDENTITY"
+      geth --datadir=./$IDENTITY $FLAGS init genesis.json
+    done
+    ;;
+
+  clean)
+    for IDENTITY in ${IDENTITIES[@]}; do
+      echo "Cleaning geth/ directory from $IDENTITY"
+      rm -r ./$IDENTITY/geth
+    done
+    ;;
+esac
