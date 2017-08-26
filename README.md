@@ -163,7 +163,7 @@ One of the most interesting features of the Ethereum blockchain is the ability t
 
 ### FreeBeer - A simple, HelloWorld-esque Smart Contract
 
-I've included a sample contract called `FreeBeer` in `solidity/FreeBeer.sol`. The contract itself is simple; it allows anybody on the Ethereum network to send the contract holder some money. Though it is simple, it illustrates some basic concepts around using smart contracts to send Ether.
+I've included a sample contract called `FreeBeer` in [`solidity/FreeBeer.sol`](https://github.com/vincentchu/eth-private-net/blob/master/solidity/FreeBeer.sol). The contract itself is simple; it allows anybody on the Ethereum network to send the contract holder some money. Though it is simple, it illustrates some basic concepts around using smart contracts to send Ether.
 
 I've pre-compiled FreeBeer's ABI and byte code (both in `solidity/`) using [`sol-js`](https://github.com/ethereum/solc-js) and wrapped both in a simple javascript file that allows easy use inside the geth console:
 
