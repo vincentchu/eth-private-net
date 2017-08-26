@@ -110,6 +110,14 @@ true
 1
 ```
 
+**Note:** The first time you begin to mine, you'll need to generate a 1GB [Directed Acyclic Graph (DAG)](https://github.com/ethereum/wiki/wiki/Ethash-DAG). This dataset is used as part of Ethereum's Proof-of-Work system, Ethash. This will take about a minute and you'll see the following lines in your node's `console.log`:
+
+```
+INFO [08-26|16:07:23] Generating DAG in progress               epoch=0 percentage=0 elapsed=304.599ms
+INFO [08-26|16:07:23] Generating DAG in progress               epoch=0 percentage=1 elapsed=550.655ms
+INFO [08-26|16:07:23] Generating DAG in progress               epoch=0 percentage=2 elapsed=798.006ms
+```
+
 After a single block is mined, the balance of the account (or `eth.coinbase`) should increase by 5 ether. The current `blockNum` should then increase exactly by 1. Evidence of the mining should be present in the node's `console.log`:
 
 ```
