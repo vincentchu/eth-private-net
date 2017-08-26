@@ -1,7 +1,7 @@
 #!/bin/bash
 
 IDENTITIES=(alice bob lily)
-FLAGS='--networkid=8888'
+FLAGS='--networkid=8888 --preload=identities.js'
 DEV_FLAGS='--nodiscover --verbosity=4'
 
 BASE_PORT=40300
