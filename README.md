@@ -1,5 +1,6 @@
 # eth-private-net
------------------
+
+Prerequisites: Make sure `geth` is installed and in the `$PATH`. You can find installation instructions [here](https://www.ethereum.org/cli). We'll also be using [solc-js](https://www.npmjs.com/package/solc) to compile our Solidity contracts. Just run `npm install` to install.
 
 ## Identities
 
@@ -24,7 +25,7 @@ You'll be prompted for a password. Afterwards, your account information, includi
 Since we're bootstrapping our own private chain, we'll need a genesis block. The definition for our block will be stored in `genesis.json`. Both Alice and Bob's addresses are pre-allocated with 1 ether (or 1e+18 [wei](http://ethdocs.org/en/latest/ether.html)). Each account can be initialized with the convenience script `eth-private-net init`, or by running (e.g., for `alice`):
 
 ```
-geth --datadir=./alice --networkid=8888 init genesis.json
+→ geth --datadir=./alice --networkid=8888 init genesis.json
 ```
 
 ## Running a Private Test Net

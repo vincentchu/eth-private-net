@@ -1,0 +1,14 @@
+{
+  "name": "eth-private-net",
+  "version": "1.0.0",
+  "description": "Get your own personal Ethereum private net.",
+  "homepage": "https://github.com/vincentchu/eth-private-net",
+  "dependencies": {
+    "solc": "^0.4.16"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/vincentchu/eth-private-net"
+  },
+  "author": "Vincent Chu"
+}
