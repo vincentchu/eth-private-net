@@ -202,6 +202,9 @@ undefined
 Next, we'll create an instance of the transaction, and deploy it. We can then obtain the deployed contract's address from the receipt (`0x48c1bdb954c945a57459286719e1a3c86305fd9e` in the example):
 
 ```
+> var freeBeerContract = eth.contract(freeBeerAbi)
+undefined
+
 > var freeBeerInstance = freeBeerContract.new(deployTxn)
 undefined
 
@@ -227,8 +230,11 @@ After the contract has been deployed, let's look at Alice's account balance. She
 Now that our contract is deployed, let's have Bob use it to send some money to Alice via the contract. To do so, Bob will take the compiled ABI and bind it to the deployed contract's address. Bob can then use this contract to call the `.gimme_money` method, sending 100 Finneys (1 Finney = 1 milliEther) to the contract owner (Alice):
 
 ```
-var freeBeerContract = eth.contract(freeBeerAbi)
-var freeBeerDeployed = freeBeerContract.at("0x48c1bdb954c945a57459286719e1a3c86305fd9e")
+> var freeBeerContract = eth.contract(freeBeerAbi)
+undefined
+
+> var freeBeerDeployed = freeBeerContract.at("0x48c1bdb954c945a57459286719e1a3c86305fd9e")
+undefined
 
 > freeBeerDeployed.gimme_money.sendTransaction({ from: bob, value: web3.toWei(0.1, 'ether')})
 "0xe42b7d3d113f8670528ee5f14ec6cd65e94d15c12b4ca31187e1134c80e884ff"
