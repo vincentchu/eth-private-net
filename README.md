@@ -1,6 +1,8 @@
 # eth-private-net
 
-Prerequisites: Make sure `geth` is installed and in the `$PATH`. You can find installation instructions [here](https://www.ethereum.org/cli). We'll also be using [solc-js](https://www.npmjs.com/package/solc) to compile our Solidity contracts. Just run `npm install` to install.
+`eth-private-net` is a simple tutorial that allows you to quickly setup a three-node private Ethereum network on your laptop. The network comes with three pre-made accounts (Alice, Bob, and Lily) and walks you through simple actions like mining and sending Ether from account to account, and culminates with the deployment and execution of a simple smart contract called `FreeBeer`. A convenience script (`eth-private-net`) is provided to make initializing, starting, and connecting nodes fast and easy.
+
+**Prerequisites:** Make sure `geth` is installed and in the `$PATH`. You can find installation instructions [here](https://www.ethereum.org/cli). We'll also be referring to various denominations of Ether (Wei, GWei, Szabo, etc.). This [site](https://etherconverter.online/) gives an overview of the various denominations, and allows you to convert between them.
 
 ## Identities
 
@@ -12,20 +14,18 @@ The private network comes with three identities (each secured with `foobar123` a
 
 Each user's identity is stored in `./[NAME]/keystore/UTC-...`.
 
-Creating new identities is easy. Simply run:
-
-```
-→ geth --datadir=./[your dir] account new
-```
-
-You'll be prompted for a password. Afterwards, your account information, including the identity's account address will be stored under: `./[NAME]/keystore/UTC-...`.
-
 ## Initializing From Genesis Block
 
-Since we're bootstrapping our own private chain, we'll need a genesis block. The definition for our block will be stored in `genesis.json`. Both Alice and Bob's addresses are pre-allocated with 1 Ether (or 1e+18 [Wei](http://ethdocs.org/en/latest/ether.html)). Each account can be initialized with the convenience script `eth-private-net init`, or by running (e.g., for `alice`):
+Since we're bootstrapping our own private chain, we'll need a genesis block. The definition for our block will be stored in `genesis.json`. Both Alice and Bob's addresses are pre-allocated with 1 Ether (or 1e+18 [Wei](http://ethdocs.org/en/latest/ether.html)). Just run:
 
 ```
-→ geth --datadir=./alice --networkid=8888 init genesis.json
+→ ./eth-private-net init
+```
+
+**Note:** Tearing down your private network and resetting all account balances is easy. Just run:
+
+```
+→ ./eth-private-net clean
 ```
 
 ## Running a Private Test Net
@@ -38,7 +38,7 @@ Starting node for alice on port: 40301, RPC port: 8101. Console logs sent to ./a
 Welcome to the Geth JavaScript console!
 ```
 
-The first thing you can do is check Alice's balance, which should show exactly 1e+18 Wei (1 ether).
+The first thing you can do is check Alice's balance, which should show exactly 1e+18 Wei (1 Ether).
 
 ```
 > eth.getBalance("0xdda6ef2ff259928c561b2d30f0cad2c2736ce8b6")
@@ -156,3 +156,115 @@ We see that Lily now has 1 Szabo, as expected. However, Alice's new balance cont
 Therefore, the transaction fee was `gas x gasPrice = 2.1e+04 x 1.8e+10 = 3.78e+14 Wei`. This accounts for the discrepancy in Alice's account (and the additional 3.78e+14 Wei that appears in Bob's account).
 
 A good metaphor for gas and gas price is electricity. In this metaphor, gas is equivalent to the amount of electricity, in kilowatt-hours (kW-h), used by various appliances in your house; gas price is then equivalent to the dollar cost of a kW-h charged by your utility. In the same way that running a lightbulb for an hour costs a fixed amount of kW-h (dictated by the physical characteristics of the bulb), an ether transfer costs a fixed amount of gas, regardless of the prevailing cost of electricity or gas.
+
+## Deploying and Running Smart Contracts
+
+One of the most interesting features of the Ethereum blockchain is the ability to deploy and run [smart contracts](https://en.wikipedia.org/wiki/Smart_contract) on the blockchain. In this section, we'll go through a simple example of writing, deploying, and running a smart contract called `FreeBeer`.
+
+### FreeBeer - A simple, HelloWorld-esque Smart Contract
+
+I've included a sample contract called `FreeBeer` in `solidity/FreeBeer.sol`. The contract itself is simple; it allows anybody on the Ethereum network to send the contract holder some money. Though it is simple, it illustrates some basic concepts around using smart contracts to send Ether.
+
+I've pre-compiled FreeBeer's ABI and byte code (both in `solidity/`) using [`sol-js`](https://github.com/ethereum/solc-js) and wrapped both in a simple javascript file that allows easy use inside the geth console:
+
+```
+> loadScript('solidity/FreeBeer.sol.js')
+true
+
+> freeBeerBytecode
+"0x6060604052341561000f57600080fd5b5b336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505b5b6101c6806100616000396000f3006060604052361561003f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063fb5de8af14610070575b5b61006c336000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff163461007a565b505b005b61007861016a565b005b60008273ffffffffffffffffffffffffffffffffffffffff166108fc839081150290604051600060405180830381858888f193505050501561015e577fbc8f5a5cb90bc33d83a08f0663beb02c65e4c51522ef0c8230d36370088a0a19848484604051808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001828152602001935050505060405180910390a160019050610163565b600090505b9392505050565b610196336000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff163461007a565b505b5600a165627a7a723058200dfd10e15bfd60e5f57a16b1c48c1a72625f80e71a2d8f50b98b855b652178390029"
+```
+
+Note: Installing `solc-js` isn't strictly necessary, but you'll need it if you want to play around with your own smart contracts. Running `npm install` installs the executable under `./node_modules/.bin/solcjs`.
+
+### Deploying
+
+Note: Make sure you unlock the accounts before deploying a contract or executing calls against it. You can do so by running `personal.unlockAccount(...)` and using `foobar123` as the password. Also make sure that a miner is running (in these examples, Lily is the sole running miner).
+
+Suppose Alice wishes to deploy `FreeBeer` to allow anybody to send her some Ether. First, she'll need to prepare a transaction from herself, and specifies the contract's compiled bytecode as data. We'll also provide 20,000 gas to pay for the deployment, and use `eth.estimateGas(...)` to check that our supplied gas is sufficient to pay for the contract's deployment:
+
+```
+> var deployTxn = { from: alice, data: freeBeerBytecode, gas: 200000 }
+undefined
+
+> eth.estimateGas(deployTxn)
+198218
+```
+
+Next, we'll create an instance of the transaction, and deploy it. We can then obtain the deployed contract's address from the receipt (`0x48c1bdb954c945a57459286719e1a3c86305fd9e` in the example):
+
+```
+> var freeBeerInstance = freeBeerContract.new(deployTxn)
+undefined
+
+> var receipt = eth.getTransactionReceipt(freeBeerInstance.transactionHash)
+undefined
+
+> receipt.contractAddress
+"0x48c1bdb954c945a57459286719e1a3c86305fd9e"
+```
+
+After the contract has been deployed, let's look at Alice's account balance. She started with exactly 1 Ether in her account. After deploying the account, her balance went down by 3,567,906 Gwei (1 Gwei = 1 Shannon = 1 Nano Ether). At the prevailing gas price of 18 Gwei, that means our deployment cost 198,217 gas--- just 1 off of our initial estimate!
+
+```
+> eth.getBalance(alice)
+996432094000000000
+
+> (web3.toWei(1, "ether") - eth.getBalance(alice)) / eth.gasPrice
+198217
+```
+
+### Using FreeBeer to Transfer Money
+
+Now that our contract is deployed, let's have Bob use it to send some money to Alice via the contract. To do so, Bob will take the compiled ABI and bind it to the deployed contract's address. Bob can then use this contract to call the `.gimme_money` method, sending 100 Finneys (1 Finney = 1 milliEther) to the contract owner (Alice):
+
+```
+var freeBeerContract = eth.contract(freeBeerAbi)
+var freeBeerDeployed = freeBeerContract.at("0x48c1bdb954c945a57459286719e1a3c86305fd9e")
+
+> freeBeerDeployed.gimme_money.sendTransaction({ from: bob, value: web3.toWei(0.1, 'ether')})
+"0xe42b7d3d113f8670528ee5f14ec6cd65e94d15c12b4ca31187e1134c80e884ff"
+```
+
+Checking our account balances after the transaction shows that Alice's account has indeed increased by 100 Finneys, while Bob's has decreased by about 100.555 Finneys. Again, the discrepancy is due to the gas cost of executing the smart contract. In this case, the cost (at the prevailing gas price) was 30,824 gas:
+
+
+```
+> [ eth.getBalance(alice), eth.getBalance(bob)]
+[1096432094000000000, 899445168000000000]
+```
+
+### Events on Smart Contracts
+
+The last concept we'll cover are events. Each time money is successfully sent, the contract emits an [event](https://github.com/vincentchu/eth-private-net/blob/master/solidity/FreeBeer.sol#L31). The following calls will allow us examine these events in greater detail.
+
+```
+> var outputEvent = function (e, result) { console.log(JSON.stringify(result)); }
+undefined
+
+> freeBeerDeployed.MoneySent({}, { fromBlock: 0, toBlock: 'latest' }).get(outputEvent)
+[
+  {
+    // Contract Address
+    "address": "0x48c1bdb954c945a57459286719e1a3c86305fd9e",
+
+    // Arguments passed to the MoneySent event
+    "args": {
+      "amount": "100000000000000000",
+      "recipient": "0xdda6ef2ff259928c561b2d30f0cad2c2736ce8b6",
+      "sender": "0x8691bf25ce4a56b15c1f99c944dc948269031801"
+    },
+    "blockHash": "0xd487568b3ce132da7da4a957c8396058b5e945db959b5bfa20a6873649f9dfa9",
+    "blockNumber": 15,
+    "event": "MoneySent",
+    "logIndex": 0,
+    "removed": false,
+    "transactionHash": "0xe42b7d3d113f8670528ee5f14ec6cd65e94d15c12b4ca31187e1134c80e884ff",
+    "transactionIndex": 0
+  }
+]
+```
+
+## Fin
+
+I hope you've enjoyed this tutorial. I wrote it mostly to help my own understanding about smart contracts and the Ethereum blockchain. It's by no means complete, but hopefully others can get some use out of it. Questions, comments, or hate? Find me on Twitter as [@vincentchu](https://twitter.com/vincentchu).
