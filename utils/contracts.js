@@ -8,14 +8,29 @@ function padGas(estimatedGas) {
   return Math.floor(1.2 * estimatedGas);
 }
 
-function deployAndWatch(addr, contract) {
+function deployAndWatch(addr, contract, args, value) {
   unlockAccount(addr);
 
-  var deployTxn = { from: addr, data: contract.bin };
-  deployTxn.gas = padGas( eth.estimateGas(deployTxn) );
-
   var ethContract = eth.contract(contract.abi);
-  var contractInstance = ethContract.new(deployTxn);
+
+  var deployTxn = args || [];
+  var metadata = { from: addr, data: contract.bin };
+  if (value) {
+    metadata.value = value;
+  }
+
+  deployTxn.push(metadata);
+
+  var contractData = ethContract.new.getData.apply(ethContract, deployTxn);
+  metadata.gas = padGas( eth.estimateGas({ data: contractData }) );
+
+  inspect('Deploying contract with data:', deployTxn);
+  var contractInstance = ethContract.new.apply(ethContract, deployTxn);
+
+  // var deployTxn = { from: addr, data: contract.bin };
+  // deployTxn.gas = padGas( eth.estimateGas(deployTxn) );
+  //
+  // var contractInstance = ethContract.new(deployTxn);
 
   var receipt = eth.getTransactionReceipt(contractInstance.transactionHash);
   while (receipt === null) {
@@ -52,12 +67,7 @@ function callContract(identity, deployedContract, method, args) {
   callArgs.push(metadata);
 
   var estimatedGas = deployedContract[method].estimateGas.apply(this, callArgs);
-
-  inspect('Estimated Gas: ' + estimatedGas);
-
   metadata.gas = padGas( estimatedGas );
-  callArgs.pop();
-  callArgs.push(metadata);
 
   inspect("Calling with", callArgs);
 
