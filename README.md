@@ -16,7 +16,7 @@ Each user's identity is stored in `./[NAME]/keystore/UTC-...`.
 
 ## Initializing From Genesis Block
 
-Since we're bootstrapping our own private chain, we'll need a genesis block. The definition for our block will be stored in `genesis.json`. Both Alice and Bob's addresses are pre-allocated with 1 Ether (or 1e+18 [Wei](http://ethdocs.org/en/latest/ether.html)). Just run:
+Since we're bootstrapping our own private chain, we'll need a [genesis block](https://github.com/ethereum/go-ethereum/wiki/Private-network#creating-the-genesis-block). The definition for our block will be stored in `genesis.json`. Both Alice and Bob's addresses are pre-allocated with 1 Ether (or 1e+18 [Wei](http://ethdocs.org/en/latest/ether.html)). Just run:
 
 ```
 → ./eth-private-net init
