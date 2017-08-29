@@ -16,7 +16,7 @@ Each user's identity is stored in `./[NAME]/keystore/UTC-...`.
 
 ## Initializing From Genesis Block
 
-Since we're bootstrapping our own private chain, we'll need a [genesis block](https://github.com/ethereum/go-ethereum/wiki/Private-network#creating-the-genesis-block). The definition for our block will be stored in `genesis.json`. Both Alice and Bob's addresses are pre-allocated with 1 Ether (or 1e+18 [Wei](http://ethdocs.org/en/latest/ether.html)). Just run:
+Since we're bootstrapping our own private chain, we'll need a [genesis block](https://github.com/ethereum/go-ethereum/wiki/Private-network#creating-the-genesis-block). The definition for our block will be stored in [`genesis.json`](https://github.com/vincentchu/eth-private-net/blob/update_README/genesis.json). Both Alice and Bob's addresses are pre-allocated with 1 Ether (or 1e+18 [Wei](http://ethdocs.org/en/latest/ether.html)). Just run:
 
 ```
 → ./eth-private-net init
@@ -186,8 +186,6 @@ true
 > txn = eth.sendTransaction({ from: alice, to: lily, value: web3.toWei(1, "szabo") })
 "0xb0fa9985cd6549258d6d96823d24398ba339f7f555fa0a58ca4b980bbbbebfe5"
 ```
-
-Note: `alice`, and `lily` are variables that contain Alice's and Lily's addresses, respectively.
 
 After the transaction has been processed, our account balances are now:
 
