@@ -1,6 +1,6 @@
 # eth-private-net
 
-`eth-private-net` is a simple tutorial that allows you to quickly setup a three-node private Ethereum network on your laptop. The network comes with three pre-made accounts (Alice, Bob, and Lily) and walks you through simple actions like mining and sending Ether from account to account, and culminates with the deployment and execution of a simple smart contract called `FreeBeer`. A convenience script (`eth-private-net`) is provided to make initializing, starting, and connecting nodes fast and easy.
+`eth-private-net` is a simple tutorial that allows you to quickly setup a three-node private Ethereum network running locally on your personal computer. The network comes with three pre-made accounts (Alice, Bob, and Lily) and walks you through simple actions like mining and sending Ether from account to account, and culminates with the deployment and execution of a simple smart contract called `FreeBeer`. A convenience script (`eth-private-net`) is provided to make initializing, starting, and connecting nodes fast and easy.
 
 **Prerequisites:** Make sure `geth` is installed and in the `$PATH`. You can find installation instructions [here](https://www.ethereum.org/cli). We'll also be referring to various denominations of Ether (Wei, GWei, Szabo, etc.). This [site](https://etherconverter.online/) gives an overview of the various denominations, and allows you to convert between them.
 
@@ -47,6 +47,16 @@ The first thing you can do is check Alice's balance, which should show exactly 1
 1000000000000000000
 ```
 
+For convenience, the addresses for alice, bob, and lily have been aliased to variables (see: [`identities.js`](https://github.com/vincentchu/eth-private-net/blob/master/identities.js)) allowing you to use them quickly and easily:
+
+```
+> bob
+"0x8691bf25ce4a56b15c1f99c944dc948269031801"
+
+> [ eth.getBalance(alice), eth.getBalance(bob), eth.getBalance(lily) ]
+[1000000000000000000, 1000000000000000000, 0]
+```
+
 You can also determine the Alice's [`enode`](https://github.com/ethereum/wiki/wiki/enode-url-format), a unique identifier for her node on the network:
 
 ```
@@ -85,7 +95,7 @@ admin.addPeer("enode://f15b1...@[::]:40301?discport=0")
 }]
 ```
 
-The convenience method `./eth-private-net connect` allows you to connect two nodes together. For instance, the following will create a three node net between Alice, Bob, and Lily:
+The convenience method `./eth-private-net connect` allows you to connect two running nodes together. For instance, the following will create a three node net between Alice, Bob, and Lily:
 
 ```
 → ./eth-private-net connect alice bob
@@ -118,7 +128,7 @@ true
 1
 ```
 
-**Note:** The first time you begin to mine, you'll need to generate a 1GB [Directed Acyclic Graph (DAG)](https://github.com/ethereum/wiki/wiki/Ethash-DAG). This dataset is used as part of Ethereum's Proof-of-Work system, Ethash and is stored in `~/.ethash/`. This will take about a minute and you'll see the following lines in your node's `console.log`:
+**Note:** The first time you begin to mine, you'll need to generate a 1GB [Directed Acyclic Graph (DAG)](https://github.com/ethereum/wiki/wiki/Ethash-DAG). This dataset is used as part of Ethereum's Proof-of-Work system, Ethash, and is stored in `~/.ethash/`. This will take about a minute and you'll see the following lines in your node's `console.log`:
 
 ```
 INFO [08-26|16:07:23] Generating DAG in progress               epoch=0 percentage=0 elapsed=304.599ms
@@ -126,7 +136,7 @@ INFO [08-26|16:07:23] Generating DAG in progress               epoch=0 percentag
 INFO [08-26|16:07:23] Generating DAG in progress               epoch=0 percentage=2 elapsed=798.006ms
 ```
 
-After a single block is mined, the balance of the account (or `eth.coinbase`) should increase by 5 ether. The current `blockNum` should then increase exactly by 1. Evidence of the mining should be present in the node's `console.log`:
+After a single block is mined, the balance of the account (or `eth.coinbase`) should increase by 5 ether. The current `blockNum` should then increase exactly by 1. Evidence of the mining should be present in the node's logfile (in this case, `alice/console.log`):
 
 ```
 INFO [08-25|16:20:45] Starting mining operation
@@ -139,7 +149,7 @@ INFO [08-25|16:20:53] 🔨 mined potential block                 number=6 hash=3
 INFO [08-25|16:20:53] Commit new mining work                   number=7 txs=0 uncles=0 elapsed=444.679µs
 ```
 
-## Transferring Ethereum
+## Transferring Ether
 
 Now that we've mined a few blocks, let's try transferring some Ethereum. Let's start from a clean network. Shutdown any running nodes by typing `exit` at the console prompt. Clean and reinitialize the network by executing:
 
@@ -149,7 +159,7 @@ Now that we've mined a few blocks, let's try transferring some Ethereum. Let's s
 → ./eth-private-net init
 ```
 
-Start nodes for alice, bob, and lily, and connect the three nodes using:
+Start nodes for alice, bob, and lily (using `eth-private-net start [alice | bob | lily]`), and connect the three nodes using:
 
 ```
 → ./eth-private-net connect alice bob
@@ -159,7 +169,9 @@ Start nodes for alice, bob, and lily, and connect the three nodes using:
 → ./eth-private-net connect bob lily
 ```
 
-Let's say Alice wants to transfer 1 Szabo (defined as 1 µEth or 1e+12 Wei) to Lily. With Bob mining (to ensure transactions are processed), we can have Alice send Lily some Ethereum by unlocking her account (with `foobar123` as the password), then sending a transaction with `.sendTransaction(...)`:
+**Note:** The following examples assume that Bob is mining (to ensure transactions are processed); start his miner with `miner.start()`.
+
+Let's say Alice wants to transfer 1 Szabo (defined as 1 µEth or 1e+12 Wei) to Lily. We can have Alice send Lily some Ethereum by unlocking her account (with `foobar123` as the password), then sending a transaction with `.sendTransaction(...)`:
 
 ```
 # As alice:
@@ -189,7 +201,12 @@ We see that Lily now has 1 Szabo, as expected. However, Alice's new balance cont
 18000000000
 ```
 
-Therefore, the transaction fee was `gas x gasPrice = 2.1e+04 x 1.8e+10 = 3.78e+14 Wei`. This accounts for the discrepancy in Alice's account (and the additional 3.78e+14 Wei that appears in Bob's account).
+Therefore, the transaction fee was `gas x gasPrice = 2.1e+04 x 1.8e+10 = 3.78e+14 Wei`. This accounts for the discrepancy in Alice's account (and the additional 3.78e+14 Wei that appears in Bob's account). In general, the gas used for executing transactions on the network (e.g., transferring ether, deploying a smart contract, or calling one) can be found with `eth.getTransactionReceipt`:
+
+```
+> eth.getTransactionReceipt("0xb0fa9985cd6549258d6d96823d24398ba339f7f555fa0a58ca4b980bbbbebfe5").cumulativeGasUsed
+21000
+```
 
 A good metaphor for gas and gas price is electricity. In this metaphor, gas is equivalent to the amount of electricity, in kilowatt-hours (kW-h), used by various appliances in your house; gas price is then equivalent to the dollar cost of a kW-h charged by your utility. In the same way that running a lightbulb for an hour costs a fixed amount of kW-h (dictated by the physical characteristics of the bulb), an ether transfer costs a fixed amount of gas, regardless of the prevailing cost of electricity or gas.
 
@@ -231,7 +248,7 @@ undefined
 198218
 ```
 
-Next, we'll create an instance of the transaction, and deploy it. We can then obtain the deployed contract's address from the receipt (`0x48c1bdb954c945a57459286719e1a3c86305fd9e` in the example):
+Next, we'll create an instance of the transaction, and deploy it. We can then obtain the deployed contract's address from the receipt (**Note:** The address of the deployed contract is `0x48c1b...` in the example, but will be different for you):
 
 ```
 # As alice:
@@ -265,6 +282,9 @@ Now that our contract is deployed, let's have Bob use it to send some money to A
 
 ```
 # As bob:
+
+> loadScript('solidity/FreeBeer.sol.js')
+true
 
 > var freeBeerContract = eth.contract(freeBeerAbi)
 undefined
@@ -318,3 +338,7 @@ undefined
 ## Fin
 
 I hope you've enjoyed this tutorial. I wrote it mostly to help my own understanding about smart contracts and the Ethereum blockchain. It's by no means complete, but hopefully others can get some use out of it. Questions, comments, or hate? Find me on Twitter as [@vincentchu](https://twitter.com/vincentchu).
+
+_Building something interesting? [Initialized Capital](https://twitter.com/@initializedcap) would love to chat with you._
+
+_Thanks:_ Brett Gibson for reading through this tutorial and providing feedback and comments.
