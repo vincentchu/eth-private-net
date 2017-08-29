@@ -41,20 +41,26 @@ Welcome to the Geth JavaScript console!
 The first thing you can do is check Alice's balance, which should show exactly 1e+18 Wei (1 Ether).
 
 ```
+# As alice:
+
 > eth.getBalance("0xdda6ef2ff259928c561b2d30f0cad2c2736ce8b6")
 1000000000000000000
 ```
 
-You can also determine the running node's `enode` identifier:
+You can also determine the Alice's [`enode`](https://github.com/ethereum/wiki/wiki/enode-url-format), a unique identifier for her node on the network:
 
 ```
+# As alice:
+
 > admin.nodeInfo.enode
 "enode://f15b1...@[::]:40301?discport=0"
 ```
 
-Take this identifier and use it to manually connect from another running client:
+Take this identifier and use it to connect Bob's node to Alice (make sure to start Bob's node with: `./eth-private-net start bob`):
 
 ```
+# As bob:
+
 > admin.peers
 []
 
@@ -97,6 +103,8 @@ true
 The console allows you to begin mining on our private network easily. Simply execute `miner.start()`:
 
 ```
+# As alice:
+
 > miner.start()
 null
 
@@ -110,7 +118,7 @@ true
 1
 ```
 
-**Note:** The first time you begin to mine, you'll need to generate a 1GB [Directed Acyclic Graph (DAG)](https://github.com/ethereum/wiki/wiki/Ethash-DAG). This dataset is used as part of Ethereum's Proof-of-Work system, Ethash. This will take about a minute and you'll see the following lines in your node's `console.log`:
+**Note:** The first time you begin to mine, you'll need to generate a 1GB [Directed Acyclic Graph (DAG)](https://github.com/ethereum/wiki/wiki/Ethash-DAG). This dataset is used as part of Ethereum's Proof-of-Work system, Ethash and is stored in `~/.ethash/`. This will take about a minute and you'll see the following lines in your node's `console.log`:
 
 ```
 INFO [08-26|16:07:23] Generating DAG in progress               epoch=0 percentage=0 elapsed=304.599ms
@@ -133,9 +141,29 @@ INFO [08-25|16:20:53] Commit new mining work                   number=7 txs=0 un
 
 ## Transferring Ethereum
 
+Now that we've mined a few blocks, let's try transferring some Ethereum. Let's start from a clean network. Shutdown any running nodes by typing `exit` at the console prompt. Clean and reinitialize the network by executing:
+
+```
+→ ./eth-private-net clean
+
+→ ./eth-private-net init
+```
+
+Start nodes for alice, bob, and lily, and connect the three nodes using:
+
+```
+→ ./eth-private-net connect alice bob
+
+→ ./eth-private-net connect alice lily
+
+→ ./eth-private-net connect bob lily
+```
+
 Let's say Alice wants to transfer 1 Szabo (defined as 1 µEth or 1e+12 Wei) to Lily. With Bob mining (to ensure transactions are processed), we can have Alice send Lily some Ethereum by unlocking her account (with `foobar123` as the password), then sending a transaction with `.sendTransaction(...)`:
 
 ```
+# As alice:
+
 > personal.unlockAccount(eth.coinbase)
 Unlock account 0xdda6ef2ff259928c561b2d30f0cad2c2736ce8b6
 Passphrase:
@@ -176,6 +204,8 @@ I've included a sample contract called `FreeBeer` in [`solidity/FreeBeer.sol`](h
 I've pre-compiled FreeBeer's ABI and byte code (both in `solidity/`) using [`sol-js`](https://github.com/ethereum/solc-js) and wrapped both in a simple javascript file that allows easy use inside the geth console:
 
 ```
+# As alice:
+
 > loadScript('solidity/FreeBeer.sol.js')
 true
 
@@ -192,6 +222,8 @@ Note: Make sure you unlock the accounts before deploying a contract or executing
 Suppose Alice wishes to deploy `FreeBeer` to allow anybody to send her some Ether. First, she'll need to prepare a transaction from herself, and specifies the contract's compiled bytecode as data. We'll also provide 20,000 gas to pay for the deployment, and use `eth.estimateGas(...)` to check that our supplied gas is sufficient to pay for the contract's deployment:
 
 ```
+# As alice:
+
 > var deployTxn = { from: alice, data: freeBeerBytecode, gas: 200000 }
 undefined
 
@@ -202,6 +234,8 @@ undefined
 Next, we'll create an instance of the transaction, and deploy it. We can then obtain the deployed contract's address from the receipt (`0x48c1bdb954c945a57459286719e1a3c86305fd9e` in the example):
 
 ```
+# As alice:
+
 > var freeBeerContract = eth.contract(freeBeerAbi)
 undefined
 
@@ -230,6 +264,8 @@ After the contract has been deployed, let's look at Alice's account balance. She
 Now that our contract is deployed, let's have Bob use it to send some money to Alice via the contract. To do so, Bob will take the compiled ABI and bind it to the deployed contract's address. Bob can then use this contract to call the `.gimme_money` method, sending 100 Finneys (1 Finney = 1 milliEther) to the contract owner (Alice):
 
 ```
+# As bob:
+
 > var freeBeerContract = eth.contract(freeBeerAbi)
 undefined
 
