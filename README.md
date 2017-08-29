@@ -30,13 +30,15 @@ Since we're bootstrapping our own private chain, we'll need a genesis block. The
 
 ## Running a Private Test Net
 
-Nodes for `alice`, `bob`, and `lily` can be started easily with the `start` action of the convenience script:
+Nodes for `alice`, `bob`, or `lily` can be started easily with the `start` action of the convenience script:
 
 ```
 → ./eth-private-net start alice
 Starting node for alice on port: 40301, RPC port: 8101. Console logs sent to ./alice/console.log
 Welcome to the Geth JavaScript console!
 ```
+
+This starts a running Ethereum node, loads whatever identity you specified on the command line, and starts a console where you can begin interacting with your private net. The console itself is a Javascript REPL with all of the commands you need to begin working with Ethereum preloaded. You can check out all of the available commands [here](https://github.com/ethereum/go-ethereum/wiki/JavaScript-Console#management-api-reference).
 
 The first thing you can do is check Alice's balance, which should show exactly 1e+18 Wei (1 Ether).
 
@@ -216,9 +218,13 @@ One of the most interesting features of the Ethereum blockchain is the ability t
 
 ### FreeBeer - A simple, HelloWorld-esque Smart Contract
 
-I've included a sample contract called `FreeBeer` in [`solidity/FreeBeer.sol`](https://github.com/vincentchu/eth-private-net/blob/master/solidity/FreeBeer.sol). The contract itself is simple; it allows anybody on the Ethereum network to send the contract holder some money. Though it is simple, it illustrates some basic concepts around using smart contracts to send Ether.
+I've included a sample contract called `FreeBeer` in [`solidity/FreeBeer.sol`](https://github.com/vincentchu/eth-private-net/blob/master/solidity/FreeBeer.sol). The contract itself is simple and written in [Solidity](https://en.wikipedia.org/wiki/Solidity), a statically-typed language for writing smart contracts. It allows anybody on the Ethereum network to send the contract holder some money. Though it is simple, it illustrates some basic concepts around using smart contracts to send Ether.
 
-I've pre-compiled FreeBeer's ABI and byte code (both in `solidity/`) using [`sol-js`](https://github.com/ethereum/solc-js) and wrapped both in a simple javascript file that allows easy use inside the geth console:
+To deploy a Solidity contract, you'll need to compile it into an [Application Binary Interface (ABI)](https://github.com/vincentchu/eth-private-net/blob/master/solidity/FreeBeer_sol_FreeBeer.abi) and Ethereum Virtual Machine (EVM) [bytecode](https://github.com/vincentchu/eth-private-net/blob/master/solidity/FreeBeer_sol_FreeBeer.bin). The ABI itself is a bit of JSON that defines the contract's interface--- e.g., what methods it exposes or the types of its arguments. The bytecode is a hex-encoded string that allows the contract to be run on the Ethereum Virtual Machine (EVM) when the contract is called.
+
+**Note:** Installing `solc-js` isn't strictly necessary, but you'll need it if you want to play around with your own smart contracts. Running `npm install` installs the executable under `./node_modules/.bin/solcjs`.
+
+I've pre-compiled FreeBeer's ABI and bytecode (both in `solidity/`) using [`sol-js`](https://github.com/ethereum/solc-js) and wrapped both in a simple javascript file that allows easy use inside the geth console:
 
 ```
 # As alice:
@@ -230,13 +236,11 @@ true
 "0x6060604052341561000f57600080fd5b5b60008054600160a060020a03191633600160a060020a03161790555b5b6101558061003c6000396000f3006060604052361561003e5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663944d1ea1811461004b575b5b610047610067565b505b005b610053610067565b604051901515815260200160405180910390f35b6000805473ffffffffffffffffffffffffffffffffffffffff163480156108fc0290604051600060405180830381858888f1935050505015610122576000547fbc8f5a5cb90bc33d83a08f0663beb02c65e4c51522ef0c8230d36370088a0a1990339073ffffffffffffffffffffffffffffffffffffffff163460405173ffffffffffffffffffffffffffffffffffffffff9384168152919092166020820152604080820192909252606001905180910390a1506001610126565b5060005b905600a165627a7a723058203dc9952621b6fb093a9c28af6f0e086c9794dd6f8a60a5b27aa463833ffefc9f0029"
 ```
 
-Note: Installing `solc-js` isn't strictly necessary, but you'll need it if you want to play around with your own smart contracts. Running `npm install` installs the executable under `./node_modules/.bin/solcjs`.
-
 ### Deploying
 
-Note: Make sure you unlock the accounts before deploying a contract or executing calls against it. You can do so by running `personal.unlockAccount(...)` and using `foobar123` as the password. Also make sure that a miner is running (in these examples, Lily is the sole running miner).
+Note: Make sure you unlock the accounts before deploying a contract or executing calls against it. You can do so by running `personal.unlockAccount(...)` and using `foobar123` as the password. Also **make sure that a miner is running** (in these examples, Lily is the sole running miner).
 
-Suppose Alice wishes to deploy `FreeBeer` to allow anybody to send her some Ether. First, she'll need to prepare a transaction from herself, and specifies the contract's compiled bytecode as data. We'll also provide 20,000 gas to pay for the deployment, and use `eth.estimateGas(...)` to check that our supplied gas is sufficient to pay for the contract's deployment:
+Suppose Alice wishes to deploy `FreeBeer` to allow anybody to send her some Ether. First, she'll need to prepare a transaction specifying the contract's compiled bytecode as data. We'll also provide 20,000 gas to pay for the deployment, and use `eth.estimateGas(...)` to check that our supplied gas is sufficient to pay for the contract's deployment:
 
 ```
 # As alice:
@@ -248,7 +252,7 @@ undefined
 165815
 ```
 
-Next, we'll create an instance of the transaction, and deploy it. We can then obtain the deployed contract's address from the receipt (**Note:** The address of the deployed contract is `0x42b7d3...` in the example, but will be different for you):
+Next, we'll create an instance of the contract from its ABI, and deploy it using the transaction. We can then obtain the deployed contract's address from the receipt (**Note:** The address of the deployed contract is `0x48c1bd...` in the example, but will be different for you):
 
 ```
 # As alice:
@@ -263,13 +267,13 @@ undefined
 undefined
 
 > receipt.contractAddress
-"0xe42b7d3d113f8670528ee5f14ec6cd65e94d15c12b4ca31187e1134c80e884ff"
+"0x48c1bdb954c945a57459286719e1a3c86305fd9e"
 
 > receipt.gasUsed
 165814
 ```
 
-We see that we used 165,814 gas in the deployment--- just 1 off of our initial estimate! After deployment, her account balance decreased by 2,984,652 Gwei (1 Gwei = 1 Shannon = 1 Nano Ether), which is just the cost of 165,814 gas as the prevailing price of 18 Gwei.
+We see that we used 165,814 gas in the deployment--- just 1 off of our initial estimate! After deployment, Alice's account balance decreased by 2,984,652 Gwei (1 Gwei = 1 Shannon = 1 Nano Ether), which is just the cost of 165,814 gas as the prevailing price of 18 Gwei.
 
 ```
 > eth.getBalance(alice)
