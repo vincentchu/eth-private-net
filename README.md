@@ -227,7 +227,7 @@ I've pre-compiled FreeBeer's ABI and byte code (both in `solidity/`) using [`sol
 true
 
 > freeBeerBytecode
-"0x6060604052341561000f57600080fd5b5b336000806101000a81548173ffffffffffffffffffffffffffffffffffffffff021916908373ffffffffffffffffffffffffffffffffffffffff1602179055505b5b6101c6806100616000396000f3006060604052361561003f576000357c0100000000000000000000000000000000000000000000000000000000900463ffffffff168063fb5de8af14610070575b5b61006c336000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff163461007a565b505b005b61007861016a565b005b60008273ffffffffffffffffffffffffffffffffffffffff166108fc839081150290604051600060405180830381858888f193505050501561015e577fbc8f5a5cb90bc33d83a08f0663beb02c65e4c51522ef0c8230d36370088a0a19848484604051808473ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff1681526020018373ffffffffffffffffffffffffffffffffffffffff1673ffffffffffffffffffffffffffffffffffffffff168152602001828152602001935050505060405180910390a160019050610163565b600090505b9392505050565b610196336000809054906101000a900473ffffffffffffffffffffffffffffffffffffffff163461007a565b505b5600a165627a7a723058200dfd10e15bfd60e5f57a16b1c48c1a72625f80e71a2d8f50b98b855b652178390029"
+"0x6060604052341561000f57600080fd5b5b60008054600160a060020a03191633600160a060020a03161790555b5b6101558061003c6000396000f3006060604052361561003e5763ffffffff7c0100000000000000000000000000000000000000000000000000000000600035041663944d1ea1811461004b575b5b610047610067565b505b005b610053610067565b604051901515815260200160405180910390f35b6000805473ffffffffffffffffffffffffffffffffffffffff163480156108fc0290604051600060405180830381858888f1935050505015610122576000547fbc8f5a5cb90bc33d83a08f0663beb02c65e4c51522ef0c8230d36370088a0a1990339073ffffffffffffffffffffffffffffffffffffffff163460405173ffffffffffffffffffffffffffffffffffffffff9384168152919092166020820152604080820192909252606001905180910390a1506001610126565b5060005b905600a165627a7a723058203dc9952621b6fb093a9c28af6f0e086c9794dd6f8a60a5b27aa463833ffefc9f0029"
 ```
 
 Note: Installing `solc-js` isn't strictly necessary, but you'll need it if you want to play around with your own smart contracts. Running `npm install` installs the executable under `./node_modules/.bin/solcjs`.
@@ -245,10 +245,10 @@ Suppose Alice wishes to deploy `FreeBeer` to allow anybody to send her some Ethe
 undefined
 
 > eth.estimateGas(deployTxn)
-198218
+165815
 ```
 
-Next, we'll create an instance of the transaction, and deploy it. We can then obtain the deployed contract's address from the receipt (**Note:** The address of the deployed contract is `0x48c1b...` in the example, but will be different for you):
+Next, we'll create an instance of the transaction, and deploy it. We can then obtain the deployed contract's address from the receipt (**Note:** The address of the deployed contract is `0x42b7d3...` in the example, but will be different for you):
 
 ```
 # As alice:
@@ -263,22 +263,25 @@ undefined
 undefined
 
 > receipt.contractAddress
-"0x48c1bdb954c945a57459286719e1a3c86305fd9e"
+"0xe42b7d3d113f8670528ee5f14ec6cd65e94d15c12b4ca31187e1134c80e884ff"
+
+> receipt.gasUsed
+165814
 ```
 
-After the contract has been deployed, let's look at Alice's account balance. She started with exactly 1 Ether in her account. After deploying the account, her balance went down by 3,567,906 Gwei (1 Gwei = 1 Shannon = 1 Nano Ether). At the prevailing gas price of 18 Gwei, that means our deployment cost 198,217 gas--- just 1 off of our initial estimate!
+We see that we used 165,814 gas in the deployment--- just 1 off of our initial estimate! After deployment, her account balance decreased by 2,984,652 Gwei (1 Gwei = 1 Shannon = 1 Nano Ether), which is just the cost of 165,814 gas as the prevailing price of 18 Gwei.
 
 ```
 > eth.getBalance(alice)
-996432094000000000
+997015348000000000
 
-> (web3.toWei(1, "ether") - eth.getBalance(alice)) / eth.gasPrice
-198217
+> web3.toWei(1, "ether") - eth.getBalance(alice) == 165814 * eth.gasPrice
+true
 ```
 
 ### Using FreeBeer to Transfer Money
 
-Now that our contract is deployed, let's have Bob use it to send some money to Alice via the contract. To do so, Bob will take the compiled ABI and bind it to the deployed contract's address. Bob can then use this contract to call the `.gimme_money` method, sending 100 Finneys (1 Finney = 1 milliEther) to the contract owner (Alice):
+Now that our contract is deployed, let's have Bob use it to send some money to Alice via the contract. To do so, Bob will take the compiled ABI and bind it to the deployed contract's address. Bob can then use this contract to call the `.gimmeMoney` method, sending 100 Finneys (1 Finney = 1 milliEther) to the contract owner (Alice):
 
 ```
 # As bob:
@@ -292,16 +295,15 @@ undefined
 > var freeBeerDeployed = freeBeerContract.at("0x48c1bdb954c945a57459286719e1a3c86305fd9e")
 undefined
 
-> freeBeerDeployed.gimme_money.sendTransaction({ from: bob, value: web3.toWei(0.1, 'ether')})
+> freeBeerDeployed.gimmeMoney.sendTransaction({ from: bob, value: web3.toWei(0.1, 'ether')})
 "0xe42b7d3d113f8670528ee5f14ec6cd65e94d15c12b4ca31187e1134c80e884ff"
 ```
 
-Checking our account balances after the transaction shows that Alice's account has indeed increased by 100 Finneys, while Bob's has decreased by about 100.555 Finneys. Again, the discrepancy is due to the gas cost of executing the smart contract. In this case, the cost (at the prevailing gas price) was 30,824 gas:
-
+Checking our account balances after the transaction shows that Alice's account has indeed increased by 100 Finneys, while Bob's has decreased by about 100.56 Finneys. Again, the discrepancy is due to the gas cost of executing the smart contract. In this case, the cost (at the prevailing gas price) was 30,979 gas:
 
 ```
 > [ eth.getBalance(alice), eth.getBalance(bob)]
-[1096432094000000000, 899445168000000000]
+[1097015348000000000, 899442378000000000]
 ```
 
 ### Events on Smart Contracts
@@ -315,21 +317,18 @@ undefined
 > freeBeerDeployed.MoneySent({}, { fromBlock: 0, toBlock: 'latest' }).get(outputEvent)
 [
   {
-    // Contract Address
     "address": "0x48c1bdb954c945a57459286719e1a3c86305fd9e",
-
-    // Arguments passed to the MoneySent event
     "args": {
       "amount": "100000000000000000",
       "recipient": "0xdda6ef2ff259928c561b2d30f0cad2c2736ce8b6",
       "sender": "0x8691bf25ce4a56b15c1f99c944dc948269031801"
     },
-    "blockHash": "0xd487568b3ce132da7da4a957c8396058b5e945db959b5bfa20a6873649f9dfa9",
-    "blockNumber": 15,
+    "blockHash": "0xe05737f1a0cbebac566e21e9d22986d36a50f42e115c058e7fe45cf14429dd4f",
+    "blockNumber": 111,
     "event": "MoneySent",
     "logIndex": 0,
     "removed": false,
-    "transactionHash": "0xe42b7d3d113f8670528ee5f14ec6cd65e94d15c12b4ca31187e1134c80e884ff",
+    "transactionHash": "0xf838b6be4d68de91ac1af91b933bb5bdfcae1e49c287184795b7933e654f2c14",
     "transactionIndex": 0
   }
 ]

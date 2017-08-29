@@ -6,7 +6,6 @@ pragma solidity ^0.4.16;
 // network to send the contract owner some money. It illustrates:
 //
 // - Contract creation
-// - Use of an private, internal method
 // - Use of a payable method to transfer value
 // - Event emission
 contract FreeBeer {
@@ -23,28 +22,23 @@ contract FreeBeer {
     recipient = msg.sender;
   }
 
-  // Private helper function that actually effects the transaction. Sends value to a given
-  // address. If successful, emits a MoneySent event, and returns true. Returns false if
-  // transaction fails.
-  function send_amount(address sender, address dest, uint256 amount) private returns (bool) {
-    if (dest.send(amount)) {
-      MoneySent(sender, dest, amount);
+  // The contract's only usable method. It's marked with the payable keyword so it can accept
+  // value when called. Sends whatever value is included with the calling transaction to the
+  // owner of the contract (i.e., the recipient). If successful, emits a MoneySent event,
+  // and returns true. Returns false if transaction fails.
+  function gimmeMoney() payable returns (bool) {
+    if (recipient.send(msg.value)) {
+      MoneySent(msg.sender, recipient, msg.value);
       return true;
     }
 
     return false;
   }
 
-  // The contract's only usable method. It's marked with the payable keyword so it can accept
-  // value when called. Delegates immediately to send_amount.
-  function gimme_money() payable {
-    send_amount(msg.sender, recipient, msg.value);
-  }
-
   // The contract's fallback function. This is a catch-all function that is executed whenever a
   // contract is called and no public methods match, or no method was specified. In this case, just
-  // send whatever value was in the transaction back to the owner.
+  // call .gimmeMoney() to send the contract owner whatever money is in the transaction.
   function () payable {
-    send_amount(msg.sender, recipient, msg.value);
+    gimmeMoney();
   }
 }
