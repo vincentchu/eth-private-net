@@ -2,7 +2,9 @@
 
 `eth-private-net` is a simple tutorial that allows you to quickly setup a three-node private Ethereum network running locally on your personal computer. The network comes with three pre-made accounts (Alice, Bob, and Lily) and walks you through simple actions like mining and sending Ether from account to account, and culminates with the deployment and execution of a simple smart contract called `FreeBeer`. A convenience script (`eth-private-net`) is provided to make initializing, starting, and connecting nodes fast and easy.
 
-**Prerequisites:** Make sure `geth` is installed and in the `$PATH`. You can find installation instructions [here](https://www.ethereum.org/cli). We'll also be referring to various denominations of Ether (Wei, GWei, Szabo, etc.). This [site](https://etherconverter.online/) gives an overview of the various denominations, and allows you to convert between them.
+**Prerequisites:** Make sure `geth` is installed and in the `$PATH`. `geth` is a golang implementation of the Ethereum protocol and provides command line tools for interacting with the Ethereum network. You can download [pre-compiled binaries](https://ethereum.github.io/go-ethereum/downloads/) or install from Homebrew or source using the [installation instructions](https://www.ethereum.org/cli).
+
+The base denomination of currency on the Ethereum network is the [Ether](https://en.wikipedia.org/wiki/Ethereum#Ether). However, since most actions on the network require just fractions of an Ether, we'll be referring to various denominations of Ether throughout the tutorial (e.g., Wei, GWei, Szabo, etc.). This [site](https://etherconverter.online/) gives an overview of the various denominations, and allows you to convert between them.
 
 ## Identities
 
@@ -342,4 +344,4 @@ I hope you've enjoyed this tutorial. I wrote it mostly to help my own understand
 
 _Building something interesting? [Initialized Capital](https://twitter.com/@initializedcap) would love to chat with you._
 
-_Thanks:_ Brett Gibson for reading through this tutorial and providing feedback and comments.
+_Thanks:_ Brett Gibson and [Sachin Agarwal](https://twitter.com/agarwal) for reading through drafts of this tutorial and providing insightful feedback and comments.
