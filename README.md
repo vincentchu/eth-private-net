@@ -1,6 +1,8 @@
 # eth-private-net
 
-`eth-private-net` is a simple tutorial that allows you to quickly setup a three-node private Ethereum network running locally on your personal computer. The network comes with three pre-made accounts (Alice, Bob, and Lily) and walks you through simple actions like mining and sending Ether from account to account, and culminates with the deployment and execution of a simple smart contract called `FreeBeer`. A convenience script (`eth-private-net`) is provided to make initializing, starting, and connecting nodes fast and easy.
+`eth-private-net` is a simple tool that allows you to quickly setup a three-node private Ethereum network running locally on your personal computer. The tool makes initializing, starting, and connecting nodes fast and easy. The network comes with three pre-made identities (Alice, Bob, and Lily) and a tutorial that walks you through simple actions like mining and transferring Ether, and culminates with the deployment and execution of a simple smart contract called `FreeBeer`. 
+
+I wrote this tool because I found a lot of the Ethereum tooling opaque and difficult to understand. A lot of the information that I needed to know was scattered through the documentation, and there wasn't a single place that wrapped together the most instructive examples to build my understanding. Moreover, I wanted a tool that would allow me to repeatedly reinitialize a network from a known, clean state to help me experiment with building, deploying, and running smart contracts.
 
 **Prerequisites:** Make sure `geth` is installed and in the `$PATH`. `geth` is a golang implementation of the Ethereum protocol and provides command line tools for interacting with the Ethereum network. You can download [pre-compiled binaries](https://ethereum.github.io/go-ethereum/downloads/) or install from Homebrew or source using the [installation instructions](https://www.ethereum.org/cli).
 
@@ -61,7 +63,7 @@ For convenience, the addresses for alice, bob, and lily have been aliased to var
 [1000000000000000000, 1000000000000000000, 0]
 ```
 
-You can also determine the Alice's [`enode`](https://github.com/ethereum/wiki/wiki/enode-url-format), a unique identifier for her node on the network:
+You can also determine the Alice's [`enode`](https://github.com/ethereum/wiki/wiki/enode-url-format), a unique identifier for her node on the private network:
 
 ```
 # As alice:
@@ -344,4 +346,4 @@ I hope you've enjoyed this tutorial. I wrote it mostly to help my own understand
 
 _Building something interesting? [Initialized Capital](https://twitter.com/@initializedcap) would love to chat with you._
 
-_Thanks:_ Brett Gibson and [Sachin Agarwal](https://twitter.com/agarwal) for reading through drafts of this tutorial and providing insightful feedback and comments.
+_Thanks:_ Brett Gibson, [Sachin Agarwal](https://twitter.com/agarwal), [Alina Libova](https://twitter.com/alina_libova), and [Kim-Mai Cutler](https://twitter.com/kimmaicutler) for reading through drafts of this tutorial and providing insightful feedback and comments.
