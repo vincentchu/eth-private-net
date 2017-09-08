@@ -242,7 +242,7 @@ true
 
 Note: Make sure you unlock the accounts before deploying a contract or executing calls against it. You can do so by running `personal.unlockAccount(...)` and using `foobar123` as the password. Also **make sure that a miner is running** (in these examples, Lily is the sole running miner).
 
-Suppose Alice wishes to deploy `FreeBeer` to allow anybody to send her some Ether. First, she'll need to prepare a transaction specifying the contract's compiled bytecode as data. We'll also provide 20,000 gas to pay for the deployment, and use `eth.estimateGas(...)` to check that our supplied gas is sufficient to pay for the contract's deployment:
+Suppose Alice wishes to deploy `FreeBeer` to allow anybody to send her some Ether. First, she'll need to prepare a transaction specifying the contract's compiled bytecode as data. We'll also provide 200,000 gas to pay for the deployment, and use `eth.estimateGas(...)` to check that our supplied gas is sufficient to pay for the contract's deployment:
 
 ```
 # As alice:
