@@ -70,7 +70,7 @@ case $CMD in
         OFFSET=2
         ;;
 
-      bob)
+      lily)
         OFFSET=3
         ;;
     esac
